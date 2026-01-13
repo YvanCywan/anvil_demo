@@ -4,5 +4,5 @@ project(anvilcons)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(anvilcons main.cpp
-        "src/main/main.cpp"
+        "src/main/main.hpp"
 )
