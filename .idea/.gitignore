@@ -1,0 +1,21 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Ignored default folder with query files
+/queries/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+bin/**/*
+build.ninja
+.anvil/**/*
+.idea
+.idea/**/*
+# .gitignore
+!anvilw
+!anvilw.bat
+/.d
+/.anvil_build/.ninja_log
+/.anvil_build/src/main/main.cpp.o

@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+set -e
+
+# --- Load Properties ---
+WRAPPER_PROP="wrapper/anvil-wrapper.properties"
+if [ ! -f "$WRAPPER_PROP" ]; then
+    echo "[Error] Cannot find $WRAPPER_PROP"
+    exit 1
+fi
+
+# Helper to read property values (handles Windows line endings)
+get_prop() {
+    grep "^$1=" "$WRAPPER_PROP" | cut -d'=' -f2 | tr -d '\r'
+}
+
+ANVIL_VERSION=$(get_prop "anvilVersion")
+REPO_URL=$(get_prop "repoUrl")
+
+if [ -z "$ANVIL_VERSION" ] || [ -z "$REPO_URL" ]; then
+    echo "[Error] anvilVersion or repoUrl missing in properties file."
+    exit 1
+fi
+
+# --- Determine Artifact & URL ---
+OS="$(uname -s)"
+case "$OS" in
+    Linux)  ARTIFACT_NAME="anvil-linux-x64.zip" ;;
+    Darwin) ARTIFACT_NAME="anvil-macos-arm64.zip" ;;
+    *) echo "Unsupported OS: $OS"; exit 1 ;;
+esac
+
+# --- Resolve 'latest' Version ---
+if [ "$ANVIL_VERSION" = "latest" ]; then
+    echo "[anvilw] Checking for latest version..."
+    LATEST_URL="$REPO_URL/releases/latest"
+
+    if command -v curl >/dev/null 2>&1; then
+        # curl -w %{url_effective} prints the final URL after redirects
+        RESOLVED_URL=$(curl -Ls -o /dev/null -w %{url_effective} "$LATEST_URL")
+    elif command -v wget >/dev/null 2>&1; then
+        # wget: parse Location header from server response
+        RESOLVED_URL=$(wget --server-response --spider "$LATEST_URL" 2>&1 | grep -i "Location:" | head -n 1 | awk '{print $2}')
+    else
+        echo "Error: Neither curl nor wget found."
+        exit 1
+    fi
+
+    if [ -z "$RESOLVED_URL" ]; then
+        echo "[Error] Failed to resolve latest version from GitHub."
+        exit 1
+    fi
+
+    # Extract tag from URL (e.g., .../releases/tag/v1.2.3 -> v1.2.3)
+    LATEST_TAG=$(basename "$RESOLVED_URL")
+
+    # Strip 'v' prefix if present to normalize version number
+    if [[ "$LATEST_TAG" == v* ]]; then
+        ANVIL_VERSION="${LATEST_TAG:1}"
+    else
+        ANVIL_VERSION="$LATEST_TAG"
+    fi
+
+    echo "[anvilw] Resolved latest to v$ANVIL_VERSION"
+fi
+
+# --- Construct Download URL ---
+# Now ANVIL_VERSION is always a specific version number
+DOWNLOAD_URL="$REPO_URL/releases/download/v$ANVIL_VERSION/$ARTIFACT_NAME"
+
+# --- Define Cache Paths ---
+# Stores binaries in .anvil/wrapper/<version>/
+ANVIL_HOME=".anvil/wrapper/$ANVIL_VERSION"
+ANVIL_BIN="$ANVIL_HOME/bin/anvil"
+TEMP_ZIP="$ANVIL_HOME/anvil.zip"
+
+# --- Download & Install ---
+if [ ! -f "$ANVIL_BIN" ]; then
+    echo "[anvilw] Downloading Anvil v$ANVIL_VERSION..."
+    mkdir -p "$ANVIL_HOME"
+
+    # Download using curl or wget
+    if command -v curl >/dev/null 2>&1; then
+        curl -L -o "$TEMP_ZIP" "$DOWNLOAD_URL"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -O "$TEMP_ZIP" "$DOWNLOAD_URL"
+    fi
+
+    # Verify download wasn't empty
+    if [ ! -s "$TEMP_ZIP" ]; then
+        echo "[Error] Download failed or file is empty."
+        rm -f "$TEMP_ZIP"
+        exit 1
+    fi
+
+    echo "[anvilw] Installing..."
+    unzip -q -o "$TEMP_ZIP" -d "$ANVIL_HOME"
+    rm "$TEMP_ZIP"
+    chmod +x "$ANVIL_BIN"
+fi
+
+# --- Execute ---
+exec "$ANVIL_BIN" "$@"
