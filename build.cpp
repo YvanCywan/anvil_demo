@@ -1,5 +1,9 @@
 #include "anvil/api.hpp"
 
+namespace anvil {
+    struct CppApplication;
+}
+
 void configure(anvil::Project& project) {
     project.name = "anvildemo";
 

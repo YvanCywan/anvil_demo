@@ -1,5 +1,7 @@
 #include "main.hpp"
+#include <vector>
+#include <string>
 
 int main(int argc, char* argv[]) {
-    return anvil::App::run(argc, argv);
+    return App::run();
 }
