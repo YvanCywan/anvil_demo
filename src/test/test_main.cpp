@@ -1,7 +1,5 @@
 #include "anvil/test.hpp"
 #include "main/main.hpp"
-#include <vector>
-#include <string>
 
 class AppTests : public anvil::TestSuite {
 public:

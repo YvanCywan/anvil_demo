@@ -1,13 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <string>
+#include <fmt/base.h>
 
 class App {
 public:
     static int run() {
-        std::cout << "Hello, World!" << std::endl;
+        fmt::print("Hello, world!\n");
         return 0;
     }
 };
