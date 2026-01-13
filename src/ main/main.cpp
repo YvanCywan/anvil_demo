@@ -2,8 +2,6 @@
 // Created by Yvan Cywan on 13/01/2026.
 //
 
-#include "main.h"
-
 #include <iostream>
 #include <ostream>
 

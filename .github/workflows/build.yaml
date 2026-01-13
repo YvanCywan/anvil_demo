@@ -1,0 +1,39 @@
+name: Release Anvil
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: anvil-linux-x64.zip
+            binary_name: anvil
+            anvilw: anvilw
+          - os: macos-latest
+            artifact_name: anvil-macos-arm64.zip
+            binary_name: anvil
+            anvilw: anvilw
+          - os: windows-latest
+            artifact_name: anvil-windows-x64.zip
+            binary_name: anvil.exe
+            anvilw: anvilw.bat
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Anvil Build
+        run: |
+          ./${{ matrix.anvilw }} build
+        shell: bash
