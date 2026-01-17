@@ -7,11 +7,10 @@ namespace anvil {
 void configure(anvil::Project& project) {
     project.name = "anvildemo";
 
-    project.add_executable("anvil", [](anvil::CppApplication& app) {
+    project.add_executable("anvil_demo", [](anvil::CppApplication& app) {
         app.add_dependency("fmt/12.1.0");
-// test commit
     });
 
-    project.add_test("anvil_tests", [](anvil::CppApplication& app) {
+    project.add_test("anvil_demo_test", [](anvil::CppApplication& app) {
     });
 }
