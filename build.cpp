@@ -9,6 +9,7 @@ void configure(anvil::Project& project) {
 
     project.add_executable("anvil", [](anvil::CppApplication& app) {
         app.add_dependency("fmt/12.1.0");
+// test commit
     });
 
     project.add_test("anvil_tests", [](anvil::CppApplication& app) {
